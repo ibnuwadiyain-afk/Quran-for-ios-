@@ -1,0 +1,53 @@
+name: Build unsigned iOS app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate --spec project.yml
+
+      - name: Build for iPad/iPhone (iOS 12.0+ arm64, unsigned)
+        run: >-
+          xcodebuild
+          -project QuranForiOS12.xcodeproj
+          -scheme QuranForiOS12
+          -sdk iphoneos
+          -configuration Release
+          -derivedDataPath build
+          IPHONEOS_DEPLOYMENT_TARGET=12.0
+          ARCHS=arm64
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          CODE_SIGN_IDENTITY=""
+          build
+
+      - name: Verify bundle assets and iOS 12.0 MinimumOSVersion
+        run: |
+          APP="build/Build/Products/Release-iphoneos/Quran Reader.app"
+          test -d "$APP"
+          test -f "$APP/Info.plist"
+          MIN_OS=$(/usr/libexec/PlistBuddy -c "Print :MinimumOSVersion" "$APP/Info.plist")
+          echo "Verified MinimumOSVersion: $MIN_OS"
+          test "$MIN_OS" = "12.0"
+
+      - name: Package unsigned IPA
+        run: |
+          chmod +x scripts/package-unsigned-ipa.sh
+          ./scripts/package-unsigned-ipa.sh "build/Build/Products/Release-iphoneos/Quran Reader.app" "QuranReader-unsigned.ipa"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QuranReader-unsigned-ipa
+          path: QuranReader-unsigned.ipa
+          if-no-files-found: error

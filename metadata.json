@@ -1,0 +1,6 @@
+{
+  "name": "Quran Reader for iOS 12 — IPA Build Studio & Device Simulator",
+  "description": "Production iOS 12.0+ Xcode project builder, asset catalog verifier, unsigned IPA packager, code-signing helper, and live UIKit Quran Reader simulator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,47 @@
+name: QuranForiOS12
+options:
+  bundleIdPrefix: org.quranreader
+  deploymentTarget:
+    iOS: "12.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "12.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    ARCHS: "arm64"
+    VALID_ARCHS: "arm64"
+    ENABLE_BITCODE: "NO"
+    CODE_SIGN_STYLE: Manual
+targets:
+  QuranForiOS12:
+    type: application
+    platform: iOS
+    deploymentTarget: "12.0"
+    sources:
+      - path: Sources
+      - path: Supporting/LaunchScreen.storyboard
+      - path: Resources/Assets.xcassets
+      - path: Resources/BundledData
+        type: group
+        buildPhase: resources
+      - path: LICENSE
+        buildPhase: resources
+    dependencies:
+      - sdk: UIKit.framework
+      - sdk: Foundation.framework
+      - sdk: AVFoundation.framework
+      - sdk: MediaPlayer.framework
+      - sdk: WebKit.framework
+      - sdk: CoreGraphics.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.quranreader.ios12
+        PRODUCT_NAME: Quran Reader
+        INFOPLIST_FILE: Supporting/Info.plist
+        GENERATE_INFOPLIST_FILE: "NO"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGNING_ALLOWED: "NO"
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGN_IDENTITY: ""
