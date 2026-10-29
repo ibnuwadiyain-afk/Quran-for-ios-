@@ -1,0 +1,186 @@
+name: Build Unsigned iOS 12+ IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-ipa:
+    name: Compile & Package Unsigned IPA (iOS 12.0+)
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare iOS 12 AppIcon Catalog & Authentic Bundled Quran Data
+        run: |
+          python3 - << 'EOF'
+          import os, json, urllib.request, zlib, struct, math
+
+          base_dir = "quran-ios" if os.path.isdir("quran-ios") else "."
+          bundled_dir = os.path.join(base_dir, "Resources", "BundledData")
+          appicon_dir = os.path.join(base_dir, "Resources", "Assets.xcassets", "AppIcon.appiconset")
+          accent_dir = os.path.join(base_dir, "Resources", "Assets.xcassets", "AccentColor.colorset")
+          assets_dir = os.path.join(base_dir, "Resources", "Assets.xcassets")
+          os.makedirs(bundled_dir, exist_ok=True)
+          os.makedirs(appicon_dir, exist_ok=True)
+          os.makedirs(accent_dir, exist_ok=True)
+
+          headers = {
+              "User-Agent": "QuranReader-iOS/1.0 (iOS 12 compatible; non-profit)",
+              "Accept": "application/json,image/png,*/*"
+          }
+
+          def fetch_url(url):
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  return resp.read()
+
+          if not os.path.exists(os.path.join(bundled_dir, "chapters.json")):
+              print("Fetching authentic 114 chapters metadata...")
+              with open(os.path.join(bundled_dir, "chapters.json"), "wb") as f:
+                  f.write(fetch_url("https://api.quran.com/api/v4/chapters?language=en"))
+
+          for page in [1, 2]:
+              pjson = os.path.join(bundled_dir, f"page-{page:03d}-translation-20.json")
+              if not os.path.exists(pjson):
+                  pdata = fetch_url(f"https://api.quran.com/api/v4/verses/by_page/{page}?language=en&fields=text_uthmani&translations=20&words=true&word_fields=text_uthmani,translation,transliteration,audio_url&per_page=50")
+                  with open(pjson, "wb") as f:
+                      f.write(pdata)
+              ppng = os.path.join(bundled_dir, f"page{page:03d}.png")
+              if not os.path.exists(ppng):
+                  pimg = fetch_url(f"https://files.quran.app/hafs/madani/width_1024/page{page:03d}.png")
+                  with open(ppng, "wb") as f:
+                      f.write(pimg)
+
+          rcatalog = os.path.join(bundled_dir, "resources_catalog.json")
+          if not os.path.exists(rcatalog):
+              catalog = {}
+              for kind in ["translations", "chapter_reciters", "tafsirs"]:
+                  catalog[kind] = json.loads(fetch_url(f"https://api.quran.com/api/v4/resources/{kind}").decode("utf-8"))
+              with open(rcatalog, "w", encoding="utf-8") as f:
+                  json.dump(catalog, f, ensure_ascii=False, separators=(",", ":"))
+
+          def write_rgb_png(filepath, size, master_pixels, master_size):
+              raw_rows = bytearray()
+              scale = master_size / float(size)
+              for y in range(size):
+                  raw_rows.append(0)
+                  sy = min(master_size - 1, int(y * scale))
+                  row_offset = sy * master_size * 3
+                  for x in range(size):
+                      sx = min(master_size - 1, int(x * scale))
+                      idx = row_offset + sx * 3
+                      raw_rows.extend(master_pixels[idx:idx+3])
+
+              def make_chunk(chunk_type, data):
+                  chunk = struct.pack(">I", len(data)) + chunk_type + data
+                  crc = zlib.crc32(chunk_type + data) & 0xffffffff
+                  return chunk + struct.pack(">I", crc)
+
+              ihdr = struct.pack(">IIBBBBB", size, size, 8, 2, 0, 0, 0)
+              compressed = zlib.compress(bytes(raw_rows), 6)
+              png_bytes = b"\x89PNG\r\n\x1a\n" + make_chunk(b"IHDR", ihdr) + make_chunk(b"IDAT", compressed) + make_chunk(b"IEND", b"")
+              with open(filepath, "wb") as f:
+                  f.write(png_bytes)
+
+          M = 512
+          master = bytearray(M * M * 3)
+          cx = cy = M / 2.0
+          for y in range(M):
+              dy = (y - cy) / (M / 2.0)
+              for x in range(M):
+                  dx = (x - cx) / (M / 2.0)
+                  dist = math.hypot(dx, dy)
+                  t = min(1.0, dist / 1.25)
+                  r = int(13 * (1 - t) + 6 * t)
+                  g = int(110 * (1 - t) + 55 * t)
+                  b = int(92 * (1 - t) + 46 * t)
+                  ax, ay = abs(dx), abs(dy)
+                  rx = abs(dx * 0.70710678 + dy * 0.70710678)
+                  ry = abs(-dx * 0.70710678 + dy * 0.70710678)
+                  s1, s2 = max(ax, ay), max(rx, ry)
+                  if (s1 <= 0.50) or (s2 <= 0.50):
+                      r, g, b = 10, 84, 70
+                  if ((0.50 <= s1 <= 0.545) and s2 >= 0.36) or ((0.50 <= s2 <= 0.545) and s1 >= 0.36):
+                      r, g, b = 229, 193, 88
+                  if 0.35 <= dist <= 0.375:
+                      r, g, b = 212, 175, 55
+                  elif dist < 0.35:
+                      r, g, b = 246, 240, 224
+                  idx = (y * M + x) * 3
+                  master[idx], master[idx+1], master[idx+2] = r, g, b
+
+          icon_specs = [
+              ("Icon-App-20x20@1x.png", "ipad", "20x20", "1x", 20),
+              ("Icon-App-20x20@2x.png", "iphone", "20x20", "2x", 40),
+              ("Icon-App-20x20@2x-ipad.png", "ipad", "20x20", "2x", 40),
+              ("Icon-App-20x20@3x.png", "iphone", "20x20", "3x", 60),
+              ("Icon-App-29x29@1x.png", "ipad", "29x29", "1x", 29),
+              ("Icon-App-29x29@2x.png", "iphone", "29x29", "2x", 58),
+              ("Icon-App-29x29@2x-ipad.png", "ipad", "29x29", "2x", 58),
+              ("Icon-App-29x29@3x.png", "iphone", "29x29", "3x", 87),
+              ("Icon-App-40x40@1x.png", "ipad", "40x40", "1x", 40),
+              ("Icon-App-40x40@2x.png", "iphone", "40x40", "2x", 80),
+              ("Icon-App-40x40@2x-ipad.png", "ipad", "40x40", "2x", 80),
+              ("Icon-App-40x40@3x.png", "iphone", "40x40", "3x", 120),
+              ("Icon-App-60x60@2x.png", "iphone", "60x60", "2x", 120),
+              ("Icon-App-60x60@3x.png", "iphone", "60x60", "3x", 180),
+              ("Icon-App-76x76@1x.png", "ipad", "76x76", "1x", 76),
+              ("Icon-App-76x76@2x.png", "ipad", "76x76", "2x", 152),
+              ("Icon-App-83.5x83.5@2x.png", "ipad", "83.5x83.5", "2x", 167),
+              ("Icon-App-1024x1024@1x.png", "ios-marketing", "1024x1024", "1x", 1024)
+          ]
+          images_json = []
+          for filename, idiom, pt_size, scale, px in icon_specs:
+              out_path = os.path.join(appicon_dir, filename)
+              if not os.path.exists(out_path):
+                  write_rgb_png(out_path, px, master, M)
+              images_json.append({"size": pt_size, "idiom": idiom, "filename": filename, "scale": scale})
+
+          with open(os.path.join(appicon_dir, "Contents.json"), "w") as f:
+              json.dump({"images": images_json, "info": {"version": 1, "author": "xcode"}}, f, indent=2)
+          with open(os.path.join(accent_dir, "Contents.json"), "w") as f:
+              json.dump({"colors": [{"idiom": "universal", "color": {"color-space": "srgb", "components": {"red": "0.051", "green": "0.431", "blue": "0.361", "alpha": "1.000"}}}], "info": {"version": 1, "author": "xcode"}}, f, indent=2)
+          with open(os.path.join(assets_dir, "Contents.json"), "w") as f:
+              json.dump({"info": {"version": 1, "author": "xcode"}}, f, indent=2)
+
+          lic = os.path.join(base_dir, "LICENSE")
+          if not os.path.exists(lic):
+              with open(lic, "w") as f:
+                  f.write("GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007\nhttps://www.gnu.org/licenses/gpl-3.0.txt\n")
+          EOF
+
+      - name: Install XcodeGen
+        run: which xcodegen || brew install xcodegen
+
+      - name: Generate Xcode Project & Compile Unsigned iOS 12.0+ App
+        run: |
+          if [ -d "quran-ios" ]; then cd quran-ios; fi
+          xcodegen generate --spec project.yml
+          xcodebuild \
+            -project QuranForiOS12.xcodeproj \
+            -scheme QuranForiOS12 \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath build \
+            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            ARCHS=arm64 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package Unsigned IPA
+        run: |
+          if [ -d "quran-ios" ]; then cd quran-ios; fi
+          chmod +x scripts/package-unsigned-ipa.sh
+          ./scripts/package-unsigned-ipa.sh "build/Build/Products/Release-iphoneos/Quran Reader.app" "$GITHUB_WORKSPACE/QuranReader-unsigned.ipa"
+
+      - name: Upload Unsigned IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuranReader-unsigned-ipa
+          path: QuranReader-unsigned.ipa
+          if-no-files-found: error

@@ -445,17 +445,56 @@ export default function App() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div className="space-y-1">
               <h2 className="text-xl font-bold text-slate-900 font-display">
-                01. Unsigned IPA Compilation &amp; Code-Signing Workflow
+                01. GitHub Actions IPA Build (ibnuwadiyain-afk/Quran-for-ios-) &amp; Signing Workflow
               </h2>
               <p className="text-sm text-slate-600">
-                Compile the arm64 Mach-O binary via GitHub Actions (macOS 15 Xcode runner) or local macOS{' '}
-                <code className="font-mono text-xs">xcodebuild</code>, then sign with your Apple Developer certificate
-                when ready.
+                Root workflow <code className="font-mono text-xs">.github/workflows/ios-unsigned.yml</code> is now
+                configured at the repository root so GitHub Actions detects it automatically.
               </p>
             </div>
             <div className="text-xs text-slate-500 tabular-nums">
-              Workflow: .github/workflows/ios-unsigned.yml · Script: scripts/sign-ipa.sh
+              Repo: ibnuwadiyain-afk/Quran-for-ios- · Runner: macos-15 · Target: iOS 12.0+
             </div>
+          </div>
+
+          {/* Step-by-Step GitHub Repo Instructions */}
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
+            <div className="text-sm font-semibold text-slate-900">
+              How to Build &amp; Download QuranReader-unsigned.ipa on GitHub (No Mac Required)
+            </div>
+            <ol className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs text-slate-700 leading-relaxed">
+              <li className="bg-white border border-slate-200 rounded-lg p-3 space-y-1">
+                <div className="font-semibold text-slate-900">1. Sync Latest Changes</div>
+                <p>
+                  Click the <strong>GitHub Sync / Push</strong> button in AI Studio once more so the new root{' '}
+                  <code className="font-mono">.github/workflows/ios-unsigned.yml</code> file is pushed to{' '}
+                  <code className="font-mono">ibnuwadiyain-afk/Quran-for-ios-</code>.
+                </p>
+              </li>
+              <li className="bg-white border border-slate-200 rounded-lg p-3 space-y-1">
+                <div className="font-semibold text-slate-900">2. Open GitHub Actions Tab</div>
+                <p>
+                  Go to your repository on GitHub:{' '}
+                  <code className="font-mono break-all">github.com/ibnuwadiyain-afk/Quran-for-ios-/actions</code> and
+                  select <strong>Build Unsigned iOS 12+ IPA</strong> in the left sidebar.
+                </p>
+              </li>
+              <li className="bg-white border border-slate-200 rounded-lg p-3 space-y-1">
+                <div className="font-semibold text-slate-900">3. Trigger or Wait (~2 min)</div>
+                <p>
+                  Pushing to <code className="font-mono">main</code>/<code className="font-mono">master</code> starts
+                  the build automatically, or click <strong>Run workflow → Run workflow</strong> to trigger it manually.
+                </p>
+              </li>
+              <li className="bg-white border border-slate-200 rounded-lg p-3 space-y-1">
+                <div className="font-semibold text-slate-900">4. Download &amp; Sign IPA</div>
+                <p>
+                  When the green checkmark appears, scroll to the bottom <strong>Artifacts</strong> section of the run
+                  and click <strong>QuranReader-unsigned-ipa</strong> to download your compiled{' '}
+                  <code className="font-mono">.ipa</code>.
+                </p>
+              </li>
+            </ol>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

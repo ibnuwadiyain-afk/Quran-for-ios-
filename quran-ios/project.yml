@@ -10,7 +10,6 @@ settings:
     IPHONEOS_DEPLOYMENT_TARGET: "12.0"
     TARGETED_DEVICE_FAMILY: "1,2"
     ARCHS: "arm64"
-    VALID_ARCHS: "arm64"
     ENABLE_BITCODE: "NO"
     CODE_SIGN_STYLE: Manual
 targets:
@@ -23,8 +22,6 @@ targets:
       - path: Supporting/LaunchScreen.storyboard
       - path: Resources/Assets.xcassets
       - path: Resources/BundledData
-        type: group
-        buildPhase: resources
       - path: LICENSE
         buildPhase: resources
     dependencies:
