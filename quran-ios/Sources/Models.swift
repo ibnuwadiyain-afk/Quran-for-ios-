@@ -76,10 +76,30 @@ struct SearchResult {
 }
 
 enum AppSettings {
+    private static let languageKey = "appUILanguageCode"
     private static let translationKey = "translationResourceID"
     private static let reciterKey = "reciterID"
     private static let tafsirKey = "tafsirResourceID"
     private static let readingSizeKey = "readingSize"
+
+    static var language: AppLanguage {
+        get {
+            guard let raw = UserDefaults.standard.string(forKey: languageKey),
+                  let value = AppLanguage(rawValue: raw) else {
+                return .system
+            }
+            return value
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: languageKey)
+            NotificationCenter.default.post(name: .appLanguageDidChange, object: nil)
+        }
+    }
+
+    static var apiLanguageCode: String {
+        language.resolvedCode
+    }
+
     static var arabicFontSize: CGFloat {
         get { let size = UserDefaults.standard.integer(forKey: readingSizeKey); return size == 0 ? 28 : CGFloat(size) }
         set { UserDefaults.standard.set(Int(newValue), forKey: readingSizeKey) }

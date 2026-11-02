@@ -20,6 +20,7 @@
 		AA0001120000000000000001 /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001120000000000000001 /* SearchViewController.swift */; };
 		AA0001130000000000000001 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001130000000000000001 /* SettingsViewController.swift */; };
 		AA0001140000000000000001 /* TafsirViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001140000000000000001 /* TafsirViewController.swift */; };
+		AA0001150000000000000001 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001150000000000000001 /* Localization.swift */; };
 		AA0002010000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB0002010000000000000001 /* Assets.xcassets */; };
 		AA0002020000000000000001 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BB0002020000000000000001 /* LaunchScreen.storyboard */; };
 		AA0002030000000000000001 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = BB0002030000000000000001 /* LICENSE */; };
@@ -51,6 +52,7 @@
 		BB0001120000000000000001 /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
 		BB0001130000000000000001 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		BB0001140000000000000001 /* TafsirViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TafsirViewController.swift; sourceTree = "<group>"; };
+		BB0001150000000000000001 /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		BB0003010000000000000001 /* chapters.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = chapters.json; sourceTree = "<group>"; };
 		BB0003020000000000000001 /* page-001-translation-20.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = page-001-translation-20.json; sourceTree = "<group>"; };
 		BB0003030000000000000001 /* page-002-translation-20.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = page-002-translation-20.json; sourceTree = "<group>"; };
@@ -88,6 +90,7 @@
 				BB0001120000000000000001 /* SearchViewController.swift */,
 				BB0001130000000000000001 /* SettingsViewController.swift */,
 				BB0001140000000000000001 /* TafsirViewController.swift */,
+				BB0001150000000000000001 /* Localization.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -165,6 +168,14 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ar,
+				id,
+				tr,
+				ur,
+				fr,
+				ru,
+				es,
+				bn,
 				Base,
 			);
 			mainGroup = DD0000010000000000000001;
@@ -215,6 +226,7 @@
 				AA0001120000000000000001 /* SearchViewController.swift in Sources */,
 				AA0001130000000000000001 /* SettingsViewController.swift in Sources */,
 				AA0001140000000000000001 /* TafsirViewController.swift in Sources */,
+				AA0001150000000000000001 /* Localization.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

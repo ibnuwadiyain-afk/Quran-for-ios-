@@ -34,10 +34,10 @@ final class ResourcePickerViewController: UITableViewController, UISearchBarDele
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 64
         searchBar.delegate = self
-        searchBar.placeholder = "Search the full catalog"
+        searchBar.placeholder = L10n.tr("catalog.search_placeholder")
         searchBar.sizeToFit()
         tableView.tableHeaderView = searchBar
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancel))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: L10n.tr("common.cancel"), style: .plain, target: self, action: #selector(cancel))
     }
 
     @objc private func cancel() { dismiss(animated: true) }

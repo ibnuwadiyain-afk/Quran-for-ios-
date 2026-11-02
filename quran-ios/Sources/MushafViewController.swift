@@ -23,15 +23,12 @@ final class MushafViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         if page < 1 || page > 604 { page = 1 }
-        title = "Mushaf"
         view.backgroundColor = UIColor(red: 0.96, green: 0.94, blue: 0.87, alpha: 1)
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         spinner.translatesAutoresizingMaskIntoConstraints = false
         pageLabel.font = .systemFont(ofSize: 15, weight: .semibold)
         pageLabel.textAlignment = .center
-        previousButton.setTitle("‹ Previous", for: .normal)
-        nextButton.setTitle("Next ›", for: .normal)
         previousButton.addTarget(self, action: #selector(previousPage), for: .touchUpInside)
         nextButton.addTarget(self, action: #selector(nextPage), for: .touchUpInside)
         let controls = UIStackView(arrangedSubviews: [previousButton, pageLabel, nextButton])
@@ -53,7 +50,6 @@ final class MushafViewController: UIViewController {
             spinner.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
             spinner.centerYAnchor.constraint(equalTo: imageView.centerYAnchor)
         ])
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Go to…", style: .plain, target: self, action: #selector(jumpToPage))
         let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(nextPage))
         swipeLeft.direction = .left
         let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(previousPage))
@@ -61,16 +57,30 @@ final class MushafViewController: UIViewController {
         imageView.isUserInteractionEnabled = true
         imageView.addGestureRecognizer(swipeLeft)
         imageView.addGestureRecognizer(swipeRight)
+        applyLocalizedStrings()
+        NotificationCenter.default.addObserver(self, selector: #selector(applyLocalizedStrings), name: .appLanguageDidChange, object: nil)
         showPage()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func applyLocalizedStrings() {
+        title = L10n.tr("mushaf.title")
+        previousButton.setTitle(L10n.tr("mushaf.previous"), for: .normal)
+        nextButton.setTitle(L10n.tr("mushaf.next"), for: .normal)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: L10n.tr("mushaf.go_to"), style: .plain, target: self, action: #selector(jumpToPage))
+        pageLabel.text = L10n.format("mushaf.page_of", page)
     }
 
     @objc private func previousPage() { if page > 1 { page -= 1; showPage() } }
     @objc private func nextPage() { if page < 604 { page += 1; showPage() } }
     @objc private func jumpToPage() {
-        let alert = UIAlertController(title: "Go to Mushaf page", message: "Enter a page number from 1 to 604.", preferredStyle: .alert)
-        alert.addTextField { field in field.keyboardType = .numberPad; field.placeholder = "Page number"; field.text = String(self.page) }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Go", style: .default) { [weak self, weak alert] _ in
+        let alert = UIAlertController(title: L10n.tr("mushaf.jump_title"), message: L10n.tr("mushaf.jump_message"), preferredStyle: .alert)
+        alert.addTextField { field in field.keyboardType = .numberPad; field.placeholder = L10n.tr("mushaf.page_placeholder"); field.text = String(self.page) }
+        alert.addAction(UIAlertAction(title: L10n.tr("common.cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: L10n.tr("common.go"), style: .default) { [weak self, weak alert] _ in
             guard let self = self, let text = alert?.textFields?.first?.text, let target = Int(text), (1...604).contains(target) else { return }
             self.page = target
             self.showPage()
@@ -79,7 +89,7 @@ final class MushafViewController: UIViewController {
     }
 
     private func showPage() {
-        pageLabel.text = "Page \(page) of 604"
+        pageLabel.text = L10n.format("mushaf.page_of", page)
         UserDefaults.standard.set(page, forKey: "lastMushafPage")
         if let localURL = LocalStore.shared.pageImageURL(page), let image = UIImage(contentsOfFile: localURL.path) {
             imageView.image = image

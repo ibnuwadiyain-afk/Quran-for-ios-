@@ -15,6 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.backgroundColor = .white
+        L10n.applyLayoutDirection(to: window)
         window?.rootViewController = MainTabBarController()
         window?.makeKeyAndVisible()
         return true
@@ -29,13 +30,35 @@ final class MainTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         viewControllers = [
-            navigation(ChapterListViewController(), title: "Surahs", icon: .surahs, tag: 0),
-            navigation(MushafViewController(), title: "Mushaf", icon: .mushaf, tag: 1),
-            navigation(BookmarksViewController(), title: "Bookmarks", icon: .bookmarks, tag: 2),
-            navigation(SearchViewController(), title: "Search", icon: .search, tag: 3),
-            navigation(SettingsViewController(), title: "Settings", icon: .settings, tag: 4)
+            navigation(ChapterListViewController(), title: L10n.tr("tab.surahs"), icon: .surahs, tag: 0),
+            navigation(MushafViewController(), title: L10n.tr("tab.mushaf"), icon: .mushaf, tag: 1),
+            navigation(BookmarksViewController(), title: L10n.tr("tab.bookmarks"), icon: .bookmarks, tag: 2),
+            navigation(SearchViewController(), title: L10n.tr("tab.search"), icon: .search, tag: 3),
+            navigation(SettingsViewController(), title: L10n.tr("tab.settings"), icon: .settings, tag: 4)
         ]
         tabBar.tintColor = UIColor(red: 0.05, green: 0.43, blue: 0.36, alpha: 1.0)
+        NotificationCenter.default.addObserver(self, selector: #selector(languageDidChange), name: .appLanguageDidChange, object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func languageDidChange() {
+        L10n.applyLayoutDirection(to: view.window)
+        let titles = [
+            L10n.tr("tab.surahs"),
+            L10n.tr("tab.mushaf"),
+            L10n.tr("tab.bookmarks"),
+            L10n.tr("tab.search"),
+            L10n.tr("tab.settings")
+        ]
+        guard let navs = viewControllers else { return }
+        for (index, nav) in navs.enumerated() where index < titles.count {
+            nav.tabBarItem.title = titles[index]
+        }
+        view.semanticContentAttribute = L10n.isRTL ? .forceRightToLeft : .forceLeftToRight
+        tabBar.semanticContentAttribute = L10n.isRTL ? .forceRightToLeft : .forceLeftToRight
     }
 
     private func navigation(_ root: UIViewController, title: String, icon: TabBarIconKind, tag: Int) -> UINavigationController {
@@ -134,9 +157,9 @@ enum TabBarIconRenderer {
 }
 
 extension UIViewController {
-    func showNotice(_ message: String, title: String = "Quran Reader") {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+    func showNotice(_ message: String, title: String? = nil) {
+        let alert = UIAlertController(title: title ?? L10n.tr("app.title"), message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: L10n.tr("common.ok"), style: .default))
         present(alert, animated: true)
     }
 

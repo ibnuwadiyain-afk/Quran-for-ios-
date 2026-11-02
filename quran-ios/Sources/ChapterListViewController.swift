@@ -26,20 +26,32 @@ final class ChapterListViewController: UITableViewController, UISearchBarDelegat
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "The Holy Quran"
+        title = L10n.tr("app.title")
         tableView.register(ChapterCell.self, forCellReuseIdentifier: "chapter")
         tableView.rowHeight = 72
         tableView.tableFooterView = UIView()
         searchBar.delegate = self
-        searchBar.placeholder = "Search surahs"
+        searchBar.placeholder = L10n.tr("surahs.search_placeholder")
         searchBar.sizeToFit()
         tableView.tableHeaderView = searchBar
+        NotificationCenter.default.addObserver(self, selector: #selector(languageDidChange), name: .appLanguageDidChange, object: nil)
 
         if let cached = LocalStore.shared.cachedChapters(), !cached.isEmpty {
             chapters = cached
             filtered = cached
             tableView.reloadData()
         }
+        loadChapters()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func languageDidChange() {
+        title = L10n.tr("app.title")
+        searchBar.placeholder = L10n.tr("surahs.search_placeholder")
+        tableView.reloadData()
         loadChapters()
     }
 
@@ -71,8 +83,8 @@ final class ChapterListViewController: UITableViewController, UISearchBarDelegat
                 }
             case .failure(let error):
                 if self.chapters.isEmpty {
-                    self.showNotice("Could not load the surah list. Please connect to the internet and retry.\n\n\(error.localizedDescription)")
-                    self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Retry", style: .plain, target: self, action: #selector(self.retry))
+                    self.showNotice("\(L10n.tr("surahs.load_error"))\n\n\(error.localizedDescription)")
+                    self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: L10n.tr("common.retry"), style: .plain, target: self, action: #selector(self.retry))
                 }
             }
         }
@@ -173,7 +185,8 @@ final class ChapterCell: UITableViewCell {
     func configure(_ chapter: Chapter) {
         number.text = "\(chapter.id)"
         english.text = chapter.nameSimple
-        subtitle.text = "\(chapter.translatedName)  ·  \(chapter.versesCount) verses  ·  \(chapter.revelationPlace.capitalized)"
+        let versesLabel = L10n.format("surahs.verses_count", chapter.versesCount)
+        subtitle.text = "\(chapter.translatedName)  ·  \(versesLabel)  ·  \(chapter.revelationPlace.capitalized)"
         arabic.text = chapter.nameArabic
     }
 }

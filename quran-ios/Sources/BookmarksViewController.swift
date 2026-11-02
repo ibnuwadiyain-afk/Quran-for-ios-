@@ -22,16 +22,26 @@ final class BookmarksViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Bookmarks"
         tableView.register(BookmarkCell.self, forCellReuseIdentifier: "bookmark")
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 145
         tableView.tableFooterView = UIView()
-        emptyLabel.text = "No bookmarked verses yet.\nTap “☆ Bookmark” on any verse while reading to save it here."
         emptyLabel.textAlignment = .center
         emptyLabel.textColor = .gray
         emptyLabel.numberOfLines = 0
         emptyLabel.font = .systemFont(ofSize: 15)
+        applyLocalizedStrings()
+        NotificationCenter.default.addObserver(self, selector: #selector(applyLocalizedStrings), name: .appLanguageDidChange, object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func applyLocalizedStrings() {
+        title = L10n.tr("tab.bookmarks")
+        emptyLabel.text = L10n.tr("bookmarks.empty")
+        tableView.reloadData()
     }
 
     override func viewWillAppear(_ animated: Bool) {

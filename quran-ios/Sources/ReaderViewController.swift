@@ -36,12 +36,29 @@ final class ReaderViewController: UITableViewController {
         tableView.tableFooterView = UIView()
         refresh.addTarget(self, action: #selector(loadVerses), for: .valueChanged)
         tableView.refreshControl = refresh
-        navigationItem.rightBarButtonItems = [
-            UIBarButtonItem(title: "Audio", style: .plain, target: self, action: #selector(playChapter)),
-            UIBarButtonItem(title: "Words", style: .plain, target: self, action: #selector(toggleWords)),
-            UIBarButtonItem(title: "More", style: .plain, target: self, action: #selector(showMore))
-        ]
+        updateNavigationButtons()
+        NotificationCenter.default.addObserver(self, selector: #selector(languageDidChange), name: .appLanguageDidChange, object: nil)
         loadVerses()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    private func updateNavigationButtons() {
+        navigationItem.rightBarButtonItems = [
+            UIBarButtonItem(title: L10n.tr("reader.audio"), style: .plain, target: self, action: #selector(playChapter)),
+            UIBarButtonItem(title: showingWords ? L10n.tr("reader.hide_words") : L10n.tr("reader.words"), style: .plain, target: self, action: #selector(toggleWords)),
+            UIBarButtonItem(title: L10n.tr("reader.more"), style: .plain, target: self, action: #selector(showMore))
+        ]
+    }
+
+    @objc private func languageDidChange() {
+        updateNavigationButtons()
+        tableView.reloadData()
+        if showingWords {
+            loadVerses()
+        }
     }
 
     @objc private func loadVerses() {
@@ -63,7 +80,7 @@ final class ReaderViewController: UITableViewController {
                 if let cached = LocalStore.shared.cachedVerses(chapterID: self.chapter.id, includeWords: self.showingWords) ?? LocalStore.shared.cachedVerses(chapterID: self.chapter.id, includeWords: !self.showingWords) {
                     self.verses = cached
                     self.tableView.reloadData()
-                    self.showNotice("Showing the saved copy. Connect to the internet to refresh the text.")
+                    self.showNotice(L10n.tr("reader.saved_copy_notice"))
                 } else {
                     self.showNotice("Could not load this surah. Please try again.\n\n\(error.localizedDescription)")
                 }
@@ -73,8 +90,10 @@ final class ReaderViewController: UITableViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        updateNavigationButtons()
         if loadedTranslationID != AppSettings.translationID {
             showingWords = false
+            updateNavigationButtons()
             loadVerses()
         } else {
             tableView.reloadData()
@@ -88,7 +107,7 @@ final class ReaderViewController: UITableViewController {
 
     @objc private func toggleWords() {
         showingWords.toggle()
-        if let items = navigationItem.rightBarButtonItems, items.count > 1 { items[1].title = showingWords ? "Hide words" : "Words" }
+        updateNavigationButtons()
         loadVerses()
     }
 
@@ -128,10 +147,10 @@ final class ReaderViewController: UITableViewController {
     }
 
     @objc private func showMore() {
-        let sheet = UIAlertController(title: chapter.nameSimple, message: "Reader actions", preferredStyle: .actionSheet)
-        sheet.addAction(UIAlertAction(title: "Download recitation", style: .default) { [weak self] _ in self?.downloadAudio() })
-        sheet.addAction(UIAlertAction(title: "Play / pause audio", style: .default) { _ in AudioPlayer.shared.toggle() })
-        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        let sheet = UIAlertController(title: chapter.nameSimple, message: L10n.tr("reader.actions_title"), preferredStyle: .actionSheet)
+        sheet.addAction(UIAlertAction(title: L10n.tr("reader.download_recitation"), style: .default) { [weak self] _ in self?.downloadAudio() })
+        sheet.addAction(UIAlertAction(title: L10n.tr("reader.play_pause_audio"), style: .default) { _ in AudioPlayer.shared.toggle() })
+        sheet.addAction(UIAlertAction(title: L10n.tr("common.cancel"), style: .cancel))
         if let pop = sheet.popoverPresentationController { pop.barButtonItem = navigationItem.rightBarButtonItems?.last }
         present(sheet, animated: true)
     }
@@ -144,7 +163,7 @@ final class ReaderViewController: UITableViewController {
                 guard let self = self else { return }
                 AudioPlayer.shared.download(url, chapterID: self.chapter.id) { result in
                     switch result {
-                    case .success: self.showNotice("Recitation saved for offline playback.")
+                    case .success: self.showNotice(L10n.tr("reader.recitation_saved"))
                     case .failure(let error): self.showNotice("Download failed. \(error.localizedDescription)")
                     }
                 }
@@ -251,10 +270,10 @@ final class VerseCell: UITableViewCell {
         }
         wordStack.isHidden = !showWords || wordItems.isEmpty
         setBookmarked(bookmarked)
-        playButton.setTitle("Play ayah", for: .normal)
-        tafsirButton.setTitle("Tafsir", for: .normal)
+        playButton.setTitle(L10n.tr("reader.play_ayah"), for: .normal)
+        tafsirButton.setTitle(L10n.tr("reader.tafsir"), for: .normal)
     }
-    func setBookmarked(_ saved: Bool) { bookmarkButton.setTitle(saved ? "✓ Bookmarked" : "☆ Bookmark", for: .normal) }
+    func setBookmarked(_ saved: Bool) { bookmarkButton.setTitle(saved ? L10n.tr("reader.bookmarked") : L10n.tr("reader.bookmark"), for: .normal) }
     @objc private func bookmarkTapped() { onBookmark?() }
     @objc private func playTapped() { onPlay?() }
     @objc private func tafsirTapped() { onTafsir?() }

@@ -5,7 +5,9 @@ final class LocalStore {
     private let defaults = UserDefaults.standard
     private let bookmarksKey = "savedQuranBookmarks"
     private let lastReadKey = "lastReadVerseKey"
-    private let chaptersKey = "cachedChapterIndex"
+    private var chaptersKey: String {
+        "cachedChapterIndex_\(AppSettings.apiLanguageCode)"
+    }
     private init() {}
 
     func cacheChapters(_ chapters: [Chapter]) {

@@ -21,7 +21,7 @@ final class TafsirViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Tafsir \(verseKey)"
+        title = "\(L10n.tr("reader.tafsir")) \(verseKey)"
         view.backgroundColor = .white
         webView.translatesAutoresizingMaskIntoConstraints = false
         spinner.translatesAutoresizingMaskIntoConstraints = false

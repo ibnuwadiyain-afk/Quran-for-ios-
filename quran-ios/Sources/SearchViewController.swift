@@ -25,22 +25,35 @@ final class SearchViewController: UITableViewController, UISearchBarDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Search Quran"
         searchBar.delegate = self
-        searchBar.placeholder = "Search translation or Arabic"
         searchBar.sizeToFit()
         tableView.tableHeaderView = searchBar
         tableView.register(SearchResultCell.self, forCellReuseIdentifier: "result")
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 150
         tableView.tableFooterView = UIView()
-        statusLabel.text = "Enter a word or phrase to search the Quran."
         statusLabel.textAlignment = .center
         statusLabel.textColor = .gray
         statusLabel.numberOfLines = 0
         tableView.backgroundView = statusLabel
+        applyLocalizedStrings()
+        NotificationCenter.default.addObserver(self, selector: #selector(applyLocalizedStrings), name: .appLanguageDidChange, object: nil)
         QuranAPI.shared.chapters { [weak self] result in self?.chapters = (try? result.get()) ?? [] }
     }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func applyLocalizedStrings() {
+        title = L10n.tr("search.title")
+        searchBar.placeholder = L10n.tr("search.placeholder")
+        if results.isEmpty {
+            statusLabel.text = L10n.tr("search.prompt")
+        }
+        tableView.reloadData()
+    }
+
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) { searchBar.resignFirstResponder(); runSearch(searchBar.text ?? "") }
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         searchTask?.cancel()
@@ -50,8 +63,8 @@ final class SearchViewController: UITableViewController, UISearchBarDelegate {
     }
     private func runSearch(_ text: String) {
         let query = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard query.count >= 2 else { results = []; tableView.reloadData(); statusLabel.text = "Enter at least two characters to search."; return }
-        statusLabel.text = "Searching…"
+        guard query.count >= 2 else { results = []; tableView.reloadData(); statusLabel.text = L10n.tr("search.min_chars"); return }
+        statusLabel.text = L10n.tr("search.searching")
         tableView.backgroundView = statusLabel
         QuranAPI.shared.search(query) { [weak self] result in
             guard let self = self else { return }
@@ -59,7 +72,7 @@ final class SearchViewController: UITableViewController, UISearchBarDelegate {
             case .success(let results):
                 self.results = results
                 self.tableView.backgroundView = results.isEmpty ? self.statusLabel : nil
-                self.statusLabel.text = results.isEmpty ? "No results found." : nil
+                self.statusLabel.text = results.isEmpty ? L10n.tr("search.no_results") : nil
                 self.tableView.reloadData()
             case .failure(let error):
                 self.results = []
@@ -116,7 +129,7 @@ final class SearchResultCell: UITableViewCell {
     }
     required init?(coder: NSCoder) { super.init(coder: coder) }
     func configure(_ result: SearchResult) {
-        location.text = "Verse \(result.verseKey)"
+        location.text = L10n.format("search.verse_prefix", result.verseKey)
         arabic.text = result.arabic
         translation.text = HTMLTextSanitizer.clean(result.translation)
     }

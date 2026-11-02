@@ -13,7 +13,7 @@ final class QuranAPI {
     }
 
     func chapters(completion: @escaping (Result<[Chapter], Error>) -> Void) {
-        request(path: "chapters", query: [URLQueryItem(name: "language", value: "en")]) { result in
+        request(path: "chapters", query: [URLQueryItem(name: "language", value: AppSettings.apiLanguageCode)]) { result in
             switch result {
             case .failure(let error):
                 if let cached = LocalStore.shared.cachedChapters() { completion(.success(cached)) }
@@ -56,7 +56,7 @@ final class QuranAPI {
         var all: [Verse] = []
         func load(page: Int) {
             var query = [
-                URLQueryItem(name: "language", value: "en"),
+                URLQueryItem(name: "language", value: AppSettings.apiLanguageCode),
                 URLQueryItem(name: "fields", value: "text_uthmani"),
                 URLQueryItem(name: "translations", value: String(AppSettings.translationID)),
                 URLQueryItem(name: "per_page", value: "50"),
@@ -86,7 +86,7 @@ final class QuranAPI {
 
     func pageVerses(page: Int, translationID: Int, completion: @escaping (Result<[Verse], Error>) -> Void) {
         let query = [
-            URLQueryItem(name: "language", value: "en"),
+            URLQueryItem(name: "language", value: AppSettings.apiLanguageCode),
             URLQueryItem(name: "fields", value: "text_uthmani"),
             URLQueryItem(name: "translations", value: String(translationID)),
             URLQueryItem(name: "words", value: "true"),
@@ -181,7 +181,7 @@ final class QuranAPI {
     }
 
     func search(_ text: String, completion: @escaping (Result<[SearchResult], Error>) -> Void) {
-        let query = [URLQueryItem(name: "q", value: text), URLQueryItem(name: "language", value: "en"), URLQueryItem(name: "size", value: "30"), URLQueryItem(name: "translations", value: String(AppSettings.translationID))]
+        let query = [URLQueryItem(name: "q", value: text), URLQueryItem(name: "language", value: AppSettings.apiLanguageCode), URLQueryItem(name: "size", value: "30"), URLQueryItem(name: "translations", value: String(AppSettings.translationID))]
         request(path: "search", query: query) { result in
             completion(result.flatMap { data in
                 do {
@@ -235,7 +235,7 @@ final class QuranAPI {
     static func offlinePageDataURL(page: Int, translationID: Int) -> URL? {
         var components = URLComponents(string: "https://api.quran.com/api/v4/verses/by_page/\(page)")
         components?.queryItems = [
-            URLQueryItem(name: "language", value: "en"),
+            URLQueryItem(name: "language", value: AppSettings.apiLanguageCode),
             URLQueryItem(name: "fields", value: "text_uthmani"),
             URLQueryItem(name: "translations", value: String(translationID)),
             URLQueryItem(name: "words", value: "true"),
