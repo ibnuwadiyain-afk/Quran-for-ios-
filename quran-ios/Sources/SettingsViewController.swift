@@ -7,6 +7,22 @@ final class SettingsViewController: UITableViewController {
     private let offlineDownloader = OfflineContentDownloader()
     private var progressAlert: UIAlertController?
 
+    init() {
+        super.init(style: .grouped)
+    }
+
+    override init(style: UITableView.Style) {
+        super.init(style: style)
+    }
+
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Settings"

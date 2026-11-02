@@ -445,56 +445,73 @@ export default function App() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
             <div className="space-y-1">
               <h2 className="text-xl font-bold text-slate-900 font-display">
-                01. GitHub Actions IPA Build (ibnuwadiyain-afk/Quran-for-ios-) &amp; Signing Workflow
+                01. No-Mac Cloud IPA Build &amp; Google Colab Signing Studio
               </h2>
               <p className="text-sm text-slate-600">
-                Root workflow <code className="font-mono text-xs">.github/workflows/ios-unsigned.yml</code> is now
-                configured at the repository root so GitHub Actions detects it automatically.
+                Both <code className="font-mono text-xs">.github/workflows/ios-unsigned.yml</code> and{' '}
+                <code className="font-mono text-xs">codemagic.yaml</code> are pre-configured at the repository root,
+                plus a Linux/Google Colab <code className="font-mono text-xs">zsign</code> script for signing without a
+                Mac.
               </p>
             </div>
             <div className="text-xs text-slate-500 tabular-nums">
-              Repo: ibnuwadiyain-afk/Quran-for-ios- · Runner: macos-15 · Target: iOS 12.0+
+              Repo: ibnuwadiyain-afk/Quran-for-ios- · Target: iOS 12.0+ arm64
             </div>
           </div>
 
-          {/* Step-by-Step GitHub Repo Instructions */}
+          {/* 3 Cloud Pathways When Out of Private GitHub Actions Minutes */}
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
             <div className="text-sm font-semibold text-slate-900">
-              How to Build &amp; Download QuranReader-unsigned.ipa on GitHub (No Mac Required)
+              Out of Free GitHub Actions Minutes &amp; No Mac? Use Any of These 3 Free Cloud Options:
             </div>
-            <ol className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs text-slate-700 leading-relaxed">
-              <li className="bg-white border border-slate-200 rounded-lg p-3 space-y-1">
-                <div className="font-semibold text-slate-900">1. Sync Latest Changes</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700 leading-relaxed">
+              <div className="bg-white border border-slate-200 rounded-lg p-3.5 space-y-1.5">
+                <div className="font-semibold text-slate-900">
+                  Option 1: Make Your GitHub Repo Public (Unlimited Free macOS Builds)
+                </div>
                 <p>
-                  Click the <strong>GitHub Sync / Push</strong> button in AI Studio once more so the new root{' '}
-                  <code className="font-mono">.github/workflows/ios-unsigned.yml</code> file is pushed to{' '}
+                  GitHub only caps Action minutes on <strong>Private</strong> repositories. For{' '}
+                  <strong>Public</strong> repositories, GitHub Actions <code className="font-mono">macos-15</code>{' '}
+                  runners are <strong>100% free and unlimited</strong> even when your account quota is exhausted.
+                </p>
+                <p className="text-slate-500">
+                  Go to <code className="font-mono">github.com/ibnuwadiyain-afk/Quran-for-ios-/settings</code> → scroll
+                  to <strong>Danger Zone</strong> → <strong>Change visibility → Make public</strong>, then run the
+                  workflow in the Actions tab.
+                </p>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-lg p-3.5 space-y-1.5">
+                <div className="font-semibold text-slate-900">
+                  Option 2: Codemagic.io Free Cloud Mac (500 Free M2 Mins/Month)
+                </div>
+                <p>
+                  We added a root <code className="font-mono">codemagic.yaml</code> file to this project. Sync to
+                  GitHub, sign in at <strong>codemagic.io</strong> with your GitHub account, and select{' '}
                   <code className="font-mono">ibnuwadiyain-afk/Quran-for-ios-</code>.
                 </p>
-              </li>
-              <li className="bg-white border border-slate-200 rounded-lg p-3 space-y-1">
-                <div className="font-semibold text-slate-900">2. Open GitHub Actions Tab</div>
-                <p>
-                  Go to your repository on GitHub:{' '}
-                  <code className="font-mono break-all">github.com/ibnuwadiyain-afk/Quran-for-ios-/actions</code> and
-                  select <strong>Build Unsigned iOS 12+ IPA</strong> in the left sidebar.
+                <p className="text-slate-500">
+                  Codemagic gives 500 free Apple Silicon M2 build minutes/month (even on private repos) and lets you
+                  download <code className="font-mono">QuranReader-unsigned.ipa</code> directly from the build page.
                 </p>
-              </li>
-              <li className="bg-white border border-slate-200 rounded-lg p-3 space-y-1">
-                <div className="font-semibold text-slate-900">3. Trigger or Wait (~2 min)</div>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-lg p-3.5 space-y-1.5">
+                <div className="font-semibold text-slate-900">
+                  Option 3: Sign Your IPA on Google Colab (Linux zsign — No Mac Needed)
+                </div>
                 <p>
-                  Pushing to <code className="font-mono">main</code>/<code className="font-mono">master</code> starts
-                  the build automatically, or click <strong>Run workflow → Run workflow</strong> to trigger it manually.
+                  Why can’t Google Colab compile UIKit? Colab runs Ubuntu Linux, and Apple’s{' '}
+                  <code className="font-mono">UIKit</code>/<code className="font-mono">xcodebuild</code> SDK only runs
+                  on macOS. However, once Codemagic or Public GitHub builds your unsigned IPA, you <strong>can</strong>{' '}
+                  sign it inside <strong>Google Colab</strong> using <code className="font-mono">zsign</code>!
                 </p>
-              </li>
-              <li className="bg-white border border-slate-200 rounded-lg p-3 space-y-1">
-                <div className="font-semibold text-slate-900">4. Download &amp; Sign IPA</div>
-                <p>
-                  When the green checkmark appears, scroll to the bottom <strong>Artifacts</strong> section of the run
-                  and click <strong>QuranReader-unsigned-ipa</strong> to download your compiled{' '}
-                  <code className="font-mono">.ipa</code>.
+                <p className="text-slate-500">
+                  See <code className="font-mono">quran-ios/scripts/sign-ipa-linux-colab.sh</code> in the Source
+                  Explorer below.
                 </p>
-              </li>
-            </ol>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

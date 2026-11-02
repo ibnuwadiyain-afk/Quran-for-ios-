@@ -1,10 +1,10 @@
 import UIKit
 
 final class ReaderViewController: UITableViewController {
-    private let chapter: Chapter
-    private let jumpToVerse: Int?
+    private var chapter: Chapter = Chapter(id: 1, nameArabic: "", nameSimple: "Surah", translatedName: "", versesCount: 7, revelationPlace: "makkah")
+    private var jumpToVerse: Int?
     private var verses: [Verse] = []
-    private var refresh = UIRefreshControl()
+    private let refresh = UIRefreshControl()
     private var showingWords = false
     private var loadedTranslationID = AppSettings.translationID
 
@@ -13,7 +13,18 @@ final class ReaderViewController: UITableViewController {
         self.jumpToVerse = jumpToVerse
         super.init(style: .plain)
     }
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override init(style: UITableView.Style) {
+        super.init(style: style)
+    }
+
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -215,7 +226,7 @@ final class VerseCell: UITableViewCell {
             stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])
     }
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    required init?(coder: NSCoder) { super.init(coder: coder) }
     func configure(verse: Verse, bookmarked: Bool, showWords: Bool) {
         keyLabel.text = verse.verseKey
         arabicLabel.font = .systemFont(ofSize: AppSettings.arabicFontSize)
@@ -252,6 +263,6 @@ final class VerseCell: UITableViewCell {
 private final class WordInfoButton: UIButton {
     var handler: (() -> Void)?
     override init(frame: CGRect) { super.init(frame: frame); addTarget(self, action: #selector(tapped), for: .touchUpInside) }
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    required init?(coder: NSCoder) { super.init(coder: coder) }
     @objc private func tapped() { handler?() }
 }

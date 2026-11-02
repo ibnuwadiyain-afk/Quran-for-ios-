@@ -7,11 +7,28 @@ final class SearchViewController: UITableViewController, UISearchBarDelegate {
     private let statusLabel = UILabel()
     private var searchTask: DispatchWorkItem?
 
+    init() {
+        super.init(style: .plain)
+    }
+
+    override init(style: UITableView.Style) {
+        super.init(style: style)
+    }
+
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Search Quran"
         searchBar.delegate = self
         searchBar.placeholder = "Search translation or Arabic"
+        searchBar.sizeToFit()
         tableView.tableHeaderView = searchBar
         tableView.register(SearchResultCell.self, forCellReuseIdentifier: "result")
         tableView.rowHeight = UITableView.automaticDimension
@@ -97,7 +114,7 @@ final class SearchResultCell: UITableViewCell {
             stack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
         ])
     }
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    required init?(coder: NSCoder) { super.init(coder: coder) }
     func configure(_ result: SearchResult) {
         location.text = "Verse \(result.verseKey)"
         arabic.text = result.arabic

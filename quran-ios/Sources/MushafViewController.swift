@@ -8,6 +8,18 @@ final class MushafViewController: UIViewController {
     private let nextButton = UIButton(type: .system)
     private var page = UserDefaults.standard.integer(forKey: "lastMushafPage")
 
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         if page < 1 || page > 604 { page = 1 }

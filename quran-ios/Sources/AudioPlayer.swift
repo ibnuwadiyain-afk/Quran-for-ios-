@@ -7,14 +7,15 @@ final class AudioPlayer {
     private var player: AVPlayer?
     private var downloadTask: URLSessionDownloadTask?
     private var currentTitle: String = "The Holy Quran"
+    private var didConfigureRemote = false
 
-    private init() {
+    private init() {}
+
+    private func activateSessionAndRemoteIfNeeded() {
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [])
         try? AVAudioSession.sharedInstance().setActive(true)
-        configureRemoteCommands()
-    }
-
-    private func configureRemoteCommands() {
+        guard !didConfigureRemote else { return }
+        didConfigureRemote = true
         let center = MPRemoteCommandCenter.shared()
         center.playCommand.isEnabled = true
         center.playCommand.addTarget { [weak self] _ in
@@ -39,6 +40,7 @@ final class AudioPlayer {
     }
 
     func play(_ url: URL, title: String = "Quran Recitation") {
+        activateSessionAndRemoteIfNeeded()
         player?.pause()
         currentTitle = title
         player = AVPlayer(url: url)

@@ -1,0 +1,29 @@
+workflows:
+  ios-unsigned-ipa:
+    name: Build Unsigned Quran Reader IPA (iOS 12.0+)
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+    scripts:
+      - name: Compile Unsigned iOS 12.0+ App & Package IPA
+        script: |
+          which xcodegen || brew install xcodegen
+          if [ -d "quran-ios" ]; then cd quran-ios; fi
+          xcodegen generate --spec project.yml
+          xcodebuild \
+            -project QuranForiOS12.xcodeproj \
+            -scheme QuranForiOS12 \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath build \
+            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            ARCHS=arm64 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+          chmod +x scripts/package-unsigned-ipa.sh
+          ./scripts/package-unsigned-ipa.sh "build/Build/Products/Release-iphoneos/Quran Reader.app" "$CM_BUILD_DIR/QuranReader-unsigned.ipa"
+    artifacts:
+      - QuranReader-unsigned.ipa

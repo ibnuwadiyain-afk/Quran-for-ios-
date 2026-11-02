@@ -1,21 +1,33 @@
 import UIKit
 
 final class ResourcePickerViewController: UITableViewController, UISearchBarDelegate {
-    private let allResources: [QuranResource]
-    private var visibleResources: [QuranResource]
-    private let selectedID: Int
-    private let onSelect: (QuranResource) -> Void
+    private var allResources: [QuranResource] = []
+    private var visibleResources: [QuranResource] = []
+    private var selectedID: Int = 0
+    private var onSelect: ((QuranResource) -> Void)?
     private let searchBar = UISearchBar()
 
     init(title: String, resources: [QuranResource], selectedID: Int, onSelect: @escaping (QuranResource) -> Void) {
-        self.allResources = resources.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
-        self.visibleResources = self.allResources
+        let sorted = resources.sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+        self.allResources = sorted
+        self.visibleResources = sorted
         self.selectedID = selectedID
         self.onSelect = onSelect
         super.init(style: .plain)
         self.title = title
     }
-    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override init(style: UITableView.Style) {
+        super.init(style: style)
+    }
+
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,10 +35,13 @@ final class ResourcePickerViewController: UITableViewController, UISearchBarDele
         tableView.estimatedRowHeight = 64
         searchBar.delegate = self
         searchBar.placeholder = "Search the full catalog"
+        searchBar.sizeToFit()
         tableView.tableHeaderView = searchBar
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(cancel))
     }
+
     @objc private func cancel() { dismiss(animated: true) }
+
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         let q = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         visibleResources = q.isEmpty ? allResources : allResources.filter {
@@ -34,7 +49,9 @@ final class ResourcePickerViewController: UITableViewController, UISearchBarDele
         }
         tableView.reloadData()
     }
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { visibleResources.count }
+
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let resource = visibleResources[indexPath.row]
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
@@ -46,9 +63,10 @@ final class ResourcePickerViewController: UITableViewController, UISearchBarDele
         cell.accessoryType = resource.id == selectedID ? .checkmark : .none
         return cell
     }
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        onSelect(visibleResources[indexPath.row])
+        onSelect?(visibleResources[indexPath.row])
         dismiss(animated: true)
     }
 }

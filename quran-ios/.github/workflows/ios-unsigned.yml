@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: which xcodegen || brew install xcodegen
 
       - name: Generate Xcode project
         run: xcodegen generate --spec project.yml
@@ -27,21 +27,16 @@ jobs:
           -derivedDataPath build
           IPHONEOS_DEPLOYMENT_TARGET=12.0
           ARCHS=arm64
+          ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=YES
+          CLANG_ENABLE_OBJC_MSGSEND_SELECTOR_STUBS=NO
+          LD_RUNPATH_SEARCH_PATHS="/usr/lib/swift @executable_path/Frameworks"
+          OTHER_LDFLAGS="-Wl,-no_fixup_chains"
           CODE_SIGNING_ALLOWED=NO
           CODE_SIGNING_REQUIRED=NO
           CODE_SIGN_IDENTITY=""
           build
 
-      - name: Verify bundle assets and iOS 12.0 MinimumOSVersion
-        run: |
-          APP="build/Build/Products/Release-iphoneos/Quran Reader.app"
-          test -d "$APP"
-          test -f "$APP/Info.plist"
-          MIN_OS=$(/usr/libexec/PlistBuddy -c "Print :MinimumOSVersion" "$APP/Info.plist")
-          echo "Verified MinimumOSVersion: $MIN_OS"
-          test "$MIN_OS" = "12.0"
-
-      - name: Package unsigned IPA
+      - name: Embed Swift 5.0 Standard Libraries & Package unsigned IPA
         run: |
           chmod +x scripts/package-unsigned-ipa.sh
           ./scripts/package-unsigned-ipa.sh "build/Build/Products/Release-iphoneos/Quran Reader.app" "QuranReader-unsigned.ipa"

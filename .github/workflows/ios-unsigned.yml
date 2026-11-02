@@ -167,12 +167,16 @@ jobs:
             -derivedDataPath build \
             IPHONEOS_DEPLOYMENT_TARGET=12.0 \
             ARCHS=arm64 \
+            ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES=YES \
+            CLANG_ENABLE_OBJC_MSGSEND_SELECTOR_STUBS=NO \
+            LD_RUNPATH_SEARCH_PATHS="/usr/lib/swift @executable_path/Frameworks" \
+            OTHER_LDFLAGS="-Wl,-no_fixup_chains" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             build
 
-      - name: Package Unsigned IPA
+      - name: Embed Swift 5.0 Standard Libraries, Verify LC_RPATH & Package IPA
         run: |
           if [ -d "quran-ios" ]; then cd quran-ios; fi
           chmod +x scripts/package-unsigned-ipa.sh
